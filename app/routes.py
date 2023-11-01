@@ -24,7 +24,7 @@ def get_venda(venda_id):
         return jsonify({'error': 'Venda não encontrada'}), 404
     return jsonify({
         'id': venda.id,
-        'data_venda': venda.data_venda.strftime('%Y-%m-%d'),
+        'data_venda': venda.data_venda.strftime('%d/%m/%Y'),
         'valor_total': venda.valor_total,
         'obs': venda.obs
     })
