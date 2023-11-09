@@ -136,7 +136,10 @@ class Venda(db.Model):
     data_venda = db.Column(db.Date)
     valor_total = db.Column(db.Float)
     obs = db.Column(db.String(100))
+    obs1 = db.Column(db.String(100))
     
-    def __init__(self, data_venda, valor_total):
+    def __init__(self, data_venda, valor_total, obs):
         self.data_venda = data_venda
         self.valor_total = valor_total
+        self.obs = obs
+      

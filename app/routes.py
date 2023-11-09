@@ -1,16 +1,21 @@
 from flask import request, jsonify
 from app import app, db
+from sqlalchemy.exc import IntegrityError
 from app.models.modelos import Venda
+from datetime import datetime
+
+
 
 # Listar todas as vendas
 @app.route('/vendas', methods=['GET'])
 def get_vendas():
     vendas = Venda.query.all()
+    
     lista_vendas = []
     for venda in vendas:
         lista_vendas.append({
             'id': venda.id,
-            'data_venda': venda.data_venda.strftime('%Y-%m-%d'),
+            'data_venda': venda.data_venda.strftime('%d/%m/%Y'),
             'valor_total': venda.valor_total,
             'obs': venda.obs
         })
@@ -30,13 +35,23 @@ def get_venda(venda_id):
     })
 
 # Criar uma nova venda
+from datetime import datetime
+
+from datetime import datetime
+
 @app.route('/vendas', methods=['POST'])
 def create_venda():
     data = request.json
-    nova_venda = Venda(data_venda=data['data_venda'], valor_total=data['valor_total'], obs=data['obs'])
+    data_venda_str = data['data_venda']
+  
+    data_venda = datetime.strptime(data_venda_str, '%d/%m/%Y').date()
+    
+    nova_venda = Venda(data_venda=data_venda, valor_total=data['valor_total'], obs=data['obs'])
     db.session.add(nova_venda)
     db.session.commit()
     return jsonify({'message': 'Venda criada com sucesso'}), 201
+
+
 
 # Atualizar uma venda
 @app.route('/vendas/<int:venda_id>', methods=['PUT'])
