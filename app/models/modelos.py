@@ -12,15 +12,27 @@ class Usuario(db.Model):
         self.nome = nome
         self.email = email
         self.senha = senha
-
 class Layout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100))
-    endereco = db.Column(db.String(100))
+    nome = db.Column(db.String(30))
+    cor_de_fundo = db.Column(db.String(10))
+    menu_institucional = db.Column(db.Boolean)
+    menu_servicos = db.Column(db.Boolean)
+    menu_produtos = db.Column(db.Boolean)
+    imagem = db.Column(db.String(255))
+    logo = db.Column(db.String(255))
+    posicao_do_menu = db.Column(db.String(20))
 
-    def __init__(self, nome, endereco):
+
+    def __init__(self, nome, cor_de_fundo, menu_institucional, menu_servicos, menu_produtos, imagem, logo, posicao_do_menu):
         self.nome = nome
-        self.endereco = endereco
+        self.cor_de_fundo = cor_de_fundo
+        self.menu_institucional = menu_institucional
+        self.menu_servicos = menu_servicos
+        self.menu_produtos = menu_produtos
+        self.imagem = imagem
+        self.logo = logo
+        self.posicao_do_menu = posicao_do_menu
 
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)

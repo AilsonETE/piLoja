@@ -1,12 +1,135 @@
 from flask import request, jsonify, make_response
 from app import app, db
 from sqlalchemy.exc import IntegrityError
-<<<<<<< HEAD
-from app.models.modelos import Empresa, Venda, Pagina, Promocao,FAQ, Noticia
-=======
-from app.models.modelos import Venda, Categoria
->>>>>>> 7c6f2f7ba3a5e89555ee67cc70b38a0ef79f0151
+from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout
+
+
 from datetime import datetime
+
+
+#Leticia
+
+# Listar todos os usuarios
+@app.route('/usuarios', methods=['GET'])
+def get_usuaarios():
+    usuarios = Usuario.query.all()
+    
+    lista_usuarios = []
+    for usuario in usuarios:
+        lista_usuarios.append({
+            'id': usuario.id,
+            'nome': usuario.nome,
+            'email': usuario.email,
+            'senha': usuario.senha
+        })
+    return jsonify(lista_usuarios)
+
+# Obter uma venda por ID
+@app.route('/usuarios/<int:usuario_id>', methods=['GET'])
+def get_usuario(usuario_id):
+    usuario = Usuario.query.get(usuario_id)
+    if usuario is None:
+        return jsonify({'error': 'Usuário não encontrado'}), 404
+    return jsonify({
+        'id': usuario.id,
+        'nome': usuario.nome,
+        'email': usuario.email,
+        'senha': usuario.senha
+    })
+
+# Criar uma novo usuario
+@app.route('/usuarios', methods=['POST'])
+def create_usuario():
+    usuario = request.json  
+   
+    novo_usuario = Usuario(nome=usuario['nome'], email=usuario['email'], senha=usuario['senha'])
+    db.session.add(novo_usuario)
+    db.session.commit()
+    return jsonify({'message': 'Usuário criado com sucesso'}), 201
+
+
+
+# Atualizar uma venda
+@app.route('/usuarios/<int:usuario_id>', methods=['PUT'])
+def update_usuario(usuario_id):
+    usuario = Usuario.query.get(usuario_id)
+    if usuario is None:
+        return jsonify({'error': 'Usuário não encontrado'}), 404
+    usuario = request.json
+    usuario.nome = usuario['nome']
+    usuario.email = usuario['email']
+    usuario.senha = usuario['senha']
+    db.session.commit()
+    return jsonify({'message': 'Usuário atualizado com sucesso'})
+
+# Excluir uma venda
+@app.route('/usuarios/<int:usuario_id>', methods=['DELETE'])
+def delete_usuario(usuario_id):
+    usuario = Usuario.query.get(usuario_id)
+    if usuario is None:
+        return jsonify({'error': 'Usuário não encontrada'}), 404
+    db.session.delete(usuario)
+    db.session.commit()
+    return jsonify({'message': 'Usuário excluído com sucesso'})
+
+#end leticia
+
+#Brenno
+# Obter informações de layout por ID
+@app.route('/layouts/<int:layout_id>', methods=['GET'])
+def get_layout(layout_id):
+    layout = Layout.query.get(layout_id)
+    if layout is None:
+        return jsonify({'error': 'Layout não encontrado'}), 404
+
+    informacoes_layout = {
+        'nome': layout.nome,
+        'cor_de_fundo': layout.cor_de_fundo,
+        'menu_institucional': layout.menu_institucional,
+        'menu_servicos': layout.menu_servicos,
+        'menu_produtos': layout.menu_produtos,
+        'imagem': layout.imagem,
+        'logo': layout.logo,
+        'posicao_do_menu': layout.posicao_do_menu
+    }
+
+    return jsonify(informacoes_layout)
+
+# Atualizar informações de layout por ID
+@app.route('/layouts/<int:layout_id>', methods=['PUT'])
+def update_layout(layout_id):
+    layout = Layout.query.get(layout_id)
+    if layout is None:
+        return jsonify({'error': 'Layout não encontrado'}), 404
+
+    data = request.json
+    layout.nome = data['nome']
+    layout.cor_de_fundo = data['cor_de_fundo']
+    layout.menu_institucional = data['menu_institucional']
+    layout.menu_servicos = data['menu_servicos']
+    layout.menu_produtos = data['menu_produtos']
+    layout.imagem = data['imagem']
+    layout.logo = data['logo']
+    layout.posicao_do_menu = data['posicao_do_menu']
+
+    db.session.commit()
+
+# Excluir layout por ID
+@app.route('/layouts/<int:layout_id>', methods=['DELETE'])
+def delete_layout(layout_id):
+    layout = Layout.query.get(layout_id)
+    if layout is None:
+        return jsonify({'error': 'Layout não encontrado'}), 404
+
+    db.session.delete(layout)
+    db.session.commit()
+
+    return jsonify({'message': 'Layout excluído com sucesso'})
+
+
+
+#End Brenno
+
 
 #Henrique
 #Listar todas as páginas
@@ -261,9 +384,8 @@ def get_empresas():
     for empresa in empresas:
         lista_empresas.append({
             'id': empresa.id,
-            'data_empresa': empresa.data_empresa.strftime('%d/%m/%Y'),
-            'valor_total': empresa.valor_total,
-            'obs': empresa.obs
+            'nome': empresa.nome
+            
         })
     return jsonify(lista_empresas)
 
@@ -285,9 +407,7 @@ def get_empresa(empresa_id):
 @app.route('/empresa', methods=['POST'])
 def create_empresa():
     data = request.json
-    data_empresa_str = data['data_empresa']
-  
-    data_empresa = datetime.strptime(data_empresa_str, '%d/%m/%Y').date()
+   
     
     nova_empresa = Empresa(data_empresa=data_empresa, valor_total=data['valor_total'], obs=data['obs'])
     db.session.add(nova_empresa)
@@ -385,43 +505,6 @@ def delete_venda(venda_id):
     db.session.delete(venda)
     db.session.commit()
     return jsonify({'message': 'Venda excluída com sucesso'})
-
-# Listar todas as categorias
-@app.route('/categoria', methods=['GET'])
-def get_categorias():
-    categorias = Categoria.query.all()
-    
-    lista_categorias = []
-    for c in categorias:
-        lista_categorias.append({
-            'id': c.id,
-            'nome': c.nome,
-            'descricao': c.descricao,
-            'tipo': c.tipo,
-        })
-    return jsonify(lista_categorias)
-
-@app.route('/categoria', methods=['POST'])
-def create_categoria():
-    data = request.json
-    _nome = data['nome']
-    _descricao = data['descricao']
-    _tipo = data['tipo']    
-    categoria = Categoria(nome=_nome, descricao=_descricao, tipo=_tipo)
-    db.session.add(categoria)
-    db.session.commit()
-    return jsonify({'status': 201, 'message': 'Categoria criada com sucesso'}), 201
-
-
-# Excluir uma categoria
-@app.route('/categoria/<int:categoria_id>', methods=['DELETE'])
-def delete_categoria(categoria_id):
-    categoria = Categoria.query.get(categoria_id)
-    if categoria is None:
-        return jsonify({'error': 'Categoria não encontrada'}), 404
-    db.session.delete(categoria)
-    db.session.commit()
-    return jsonify({'message': 'Categoria excluída com sucesso'})
 
 # Listar todas as categorias
 @app.route('/categoria', methods=['GET'])
