@@ -96,32 +96,41 @@ class Empresa(db.Model):
         self.whats = whats
 
 class Pagina(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100))
     conteudo = db.Column(db.Text)
+    descricao = db.Column(db.Text)
 
-    def __init__(self, nome, conteudo):
+    def __init__(self, nome, conteudo, descricao):
         self.nome = nome
         self.conteudo = conteudo
+        self.descricao = descricao
+
 
 class FAQ(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(100))
     descricao = db.Column(db.Text)
+    data = db.Column(db.Date)
 
-    def __init__(self, titulo, descricao):
+    def __init__(self, titulo, descricao, data):
         self.titulo = titulo
         self.descricao = descricao
+        self.data = data
 
 class Noticia(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(100))
     conteudo = db.Column(db.Text)
+    autor = db.Column(db.Text)
+    data = db.Column(db.Date)
 
-    def __init__(self, titulo, conteudo):
+
+    def __init__(self, titulo, conteudo,autor,data):
         self.titulo = titulo
         self.conteudo = conteudo
-
+        self.autor= autor
+        self.data = data
 class TabelaExemplo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100))
