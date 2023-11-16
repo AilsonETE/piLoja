@@ -38,7 +38,7 @@ class Produto(db.Model):
         self.imagem = imagem
 
 class Categoria(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100))
     descricao = db.Column(db.String(100))
     tipo = db.Column(db.String(20))
