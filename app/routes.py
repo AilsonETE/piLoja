@@ -1,7 +1,7 @@
 from flask import request, jsonify, make_response
 from app import app, db
 from sqlalchemy.exc import IntegrityError
-from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout
+from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout, Servico
 
 
 from datetime import datetime
@@ -542,3 +542,78 @@ def delete_categoria(categoria_id):
     db.session.delete(categoria)
     db.session.commit()
     return jsonify({'message': 'Categoria excluída com sucesso'})
+
+@app.route('/servico', methods=['GET'])
+def get_servicos():
+    servicos = Servico.query.all()
+    
+    lista_servicos = []
+    for s in servicos:
+        lista_servicos.append({
+            'id': s.id,
+            'nome': s.nome,
+            'descricao': s.descricao,
+            'link_contato': s.link_contato,
+            'categoria': s.categoria,
+            'imagem': s.imagem,
+        })
+    return jsonify(lista_servicos)
+
+# Obter um serviço específico
+@app.route('/servico/<int:servico_id>', methods=['GET'])
+def get_servico(servico_id):
+    servico = Servico.query.get(servico_id)
+    if servico is None:
+        return jsonify({'error': 'Serviço não encontrado'}), 404
+    
+    return jsonify({
+        'id': servico.id,
+        'nome': servico.nome,
+        'descricao': servico.descricao,
+        'link_contato': servico.link_contato,
+        'categoria': servico.categoria,
+        'imagem': servico.imagem,
+    })
+
+# Criar um novo serviço
+@app.route('/servico', methods=['POST'])
+def create_servico():
+    data = request.json
+    _nome = data['nome']
+    _descricao = data['descricao']
+    _link_contato = data['link_contato']
+    _categoria = data['categoria']
+    _imagem = data.get('imagem', None)  # imagem é opcional
+    
+    servico = Servico(nome=_nome, descricao=_descricao, link_contato=_link_contato, categoria=_categoria, imagem=_imagem)
+    db.session.add(servico)
+    db.session.commit()
+    return jsonify({'status': 201, 'message': 'Serviço criado com sucesso'}), 201
+
+# Atualizar um serviço
+@app.route('/servico/<int:servico_id>', methods=['PUT'])
+def update_servico(servico_id):
+    data = request.json
+    servico = Servico.query.get(servico_id)
+
+    if servico is None:
+        return jsonify({'error': 'Serviço não encontrado'}), 404
+
+    servico.nome = data['nome']
+    servico.descricao = data['descricao']
+    servico.link_contato = data['link_contato']
+    servico.categoria = data['categoria']
+    servico.imagem = data.get('imagem', servico.imagem)  # mantém a imagem existente se não for fornecida
+
+    db.session.commit()
+    return jsonify({'message': 'Serviço atualizado com sucesso'})
+
+# Excluir um serviço
+@app.route('/servico/<int:servico_id>', methods=['DELETE'])
+def delete_servico(servico_id):
+    servico = Servico.query.get(servico_id)
+    if servico is None:
+        return jsonify({'error': 'Serviço não encontrado'}), 404
+    db.session.delete(servico)
+    db.session.commit()
+    return jsonify({'message': 'Serviço excluído com sucesso'})

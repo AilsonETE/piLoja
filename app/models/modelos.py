@@ -63,14 +63,16 @@ class Categoria(db.Model):
 class Servico(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100))
-    descricao = db.Column(db.String(100))
-    categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'))
+    descricao = db.Column(db.String(255))  # Aumentei o tamanho do campo para a descrição
+    link_contato = db.Column(db.String(100))
+    categoria = db.Column(db.String(100))  # Nome da categoria
     imagem = db.Column(db.String(100))
 
-    def __init__(self, nome, descricao, categoria_id, imagem):
+    def __init__(self, nome, descricao, link_contato, categoria, imagem):
         self.nome = nome
         self.descricao = descricao
-        self.categoria_id = categoria_id
+        self.link_contato = link_contato
+        self.categoria = categoria
         self.imagem = imagem
 
 class Promocao(db.Model):
