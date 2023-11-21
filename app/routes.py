@@ -324,6 +324,7 @@ def delete_pagina(pagina_id):
 #end Henrique
 
 #Sinara
+
 # Criar uma nova noticias
 @app.route('/noticias', methods=['POST'])
 def create_noticia():
@@ -346,11 +347,45 @@ def get_noticias():
         lista_noticia.append ({
             'id': noticia.id,
             'titulo': noticia.titulo,
+            'conteudo': noticia.conteudo,
             'autor': noticia.autor,
-            'data': noticia.data_noticia.strftime('%d/%m/%Y'),
+            'data': noticia.data.strftime('%d/%m/%Y'),
         })
     return jsonify(lista_noticia)
+
+
+# Atualizar uma noticias
+
+@app.route('/noticias/<int:noticias_id>', methods=['PUT'])
+def update_noticias(noticias_id):
+    noticia = Noticia.query.get(noticias_id)
+    if noticia is None:
+        return jsonify({'error': 'Noticia não encontrada'}), 404
+
+    dados_noticia = request.json
+    noticia.titulo = dados_noticia['titulo']
+    noticia.autor = dados_noticia['autor']
+    noticia.conteudo = dados_noticia['conteudo']
+    noticia.data_noticias = dados_noticia['data_noticias']
+
+    db.session.commit()
+    return jsonify({'message': 'Noticia atualizada com sucesso'})
+
+
+# Excluir uma noticias
+
+@app.route('/noticias/<int:noticias_id>', methods=['DELETE'])
+def delete_noticias(noticias_id):
+    noticia = Noticia.query.get(noticias_id)
+    if noticia is None:
+        return jsonify({'Error': 'Noticia não encontrada'}), 404
+
+    db.session.delete(noticia)
+    db.session.commit()
+    return jsonify({'message': 'Noticia excluida com sucesso'})
 #end Sinara
+
+
 
 #listar todas as perguntas
 @app.route('/faqs', methods=['GET'])
