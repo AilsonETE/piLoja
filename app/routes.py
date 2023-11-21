@@ -1,14 +1,86 @@
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, send_from_directory
 from app import app, db
 from sqlalchemy.exc import IntegrityError
-from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout
-
+from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout, Servico
+import os
 
 from datetime import datetime
 
+UPLOAD_FOLDER = 'caminho/para/salvar/os/arquivos'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Função para verificar e criar o diretório de upload
+def verifica_e_cria_diretorio_upload():
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+        
+#Janio begin
+@app.route('/servicos',methods=['GET'])
+def get_servicos():
+    Servicos = servicos.query.all()
+    lista_servicos= []
+    for servico in Servicos:
+        lista_servicos.append({
+            'id': servico.id,
+            'nome': servico.nome,
+            'descricao': servico.descricao,
+            'imagem' : servico.imagem
+            })
+    return jsonify(lista_servicos) , 200
+
+
+# Obter uma venda por ID
+@app.route('/obter_servicos/<int:servicos_id>', methods=['GET'])
+def get_id_servicos(servicos_id):
+    Servicos = servicos.query.get(servicos_id)
+    if Servicos is None:
+        return jsonify({'error': 'Venda não encontrada'}), 404
+    return jsonify({
+        'id': Servicos.id,
+    })
+
+# Criar um serviço
+
+@app.route('/criar_servicos', methods=['POST'])
+def create_servico():
+    data = request.json  
+    
+    
+    novo_servico = Servico(nome=data['nome'], descricao=data['descricao'],categoria_id=data['categoria_id'],imagem=data['imagem'])
+    db.session.add(novo_servico)
+    db.session.commit()
+    return jsonify({'message': 'servico criado com sucesso'}), 201
+
+
+
+# Atualizar um serviço
+@app.route('/atualizar_servicos/<int:servicos_id>', methods=['PUT'])
+def update_servico(servicos_id):
+    Servicos = servicos.query.get(servicos_id)
+    if Servicos is None:
+        return jsonify({'error': 'Servico não encontrado'}), 404
+    data = request.json
+    Servicos.nome = data['nome']
+    Servicos.descricao = data['nome']
+    Servicos.id_categoria = data['id_categoria']
+    Servicos.imagem = data['imagem']
+
+    db.session.commit()
+    return jsonify({'message': 'Serviço atualizado com sucesso'})
+
+# Excluir uma venda
+@app.route('/excluir_servicos/<int:servicos_id>', methods=['DELETE'])
+def delete_servico(servicos_id):
+    Servicos = servicos.query.get(servicos_id)
+    if Servicos is None:
+        return jsonify({'error': 'servicos não encontrada'}), 404
+    db.session.delete(Servicos)
+    db.session.commit()
+    return jsonify({'message': 'servicos excluída com sucesso'})
+
+#end Janio
 
 #Leticia
-
 # Listar todos os usuarios
 @app.route('/usuarios', methods=['GET'])
 def get_usuaarios():
@@ -82,6 +154,7 @@ def get_layout(layout_id):
     if layout is None:
         return jsonify({'error': 'Layout não encontrado'}), 404
 
+
     informacoes_layout = {
         'nome': layout.nome,
         'cor_de_fundo': layout.cor_de_fundo,
@@ -102,17 +175,49 @@ def update_layout(layout_id):
     if layout is None:
         return jsonify({'error': 'Layout não encontrado'}), 404
 
-    data = request.json
+
+    # Obtém os dados do formulário
+    data = request.form
     layout.nome = data['nome']
     layout.cor_de_fundo = data['cor_de_fundo']
-    layout.menu_institucional = data['menu_institucional']
-    layout.menu_servicos = data['menu_servicos']
-    layout.menu_produtos = data['menu_produtos']
-    layout.imagem = data['imagem']
-    layout.logo = data['logo']
+    layout.menu_institucional = 'menuInstitucional' in data
+    layout.menu_servicos = 'menuServicos' in data
+    layout.menu_produtos = 'menuProdutos' in data
     layout.posicao_do_menu = data['posicao_do_menu']
 
+
+    # Verifica se o campo de imagem foi enviado
+    if 'imagem' in request.files:
+        # Processa a imagem
+        verifica_e_cria_diretorio_upload()
+        imagem = request.files['imagem']
+        if imagem.filename != '':
+            filename = secure_filename(imagem.filename)
+            imagem.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            layout.imagem = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+
+    # Verifica se o campo de logo foi enviado
+    if 'logo' in request.files:
+        # Processa o logo
+        verifica_e_cria_diretorio_upload()
+        logo = request.files['logo']
+        if logo.filename != '':
+            filename = secure_filename(logo.filename)
+            logo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            layout.logo = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+
     db.session.commit()
+
+
+    return jsonify({'message': 'Informações de layout atualizadas com sucesso'})
+
+# Rota para servir os arquivos enviados
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 # Excluir layout por ID
 @app.route('/layouts/<int:layout_id>', methods=['DELETE'])
@@ -121,11 +226,19 @@ def delete_layout(layout_id):
     if layout is None:
         return jsonify({'error': 'Layout não encontrado'}), 404
 
+
+    # Remove os arquivos associados ao layout
+    if layout.imagem:
+        os.remove(layout.imagem)
+    if layout.logo:
+        os.remove(layout.logo)
+
+
     db.session.delete(layout)
     db.session.commit()
 
-    return jsonify({'message': 'Layout excluído com sucesso'})
 
+    return jsonify({'message': 'Layout excluído com sucesso'})
 
 
 #End Brenno

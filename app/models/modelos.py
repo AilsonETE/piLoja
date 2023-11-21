@@ -16,15 +16,16 @@ class Layout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(30))
     cor_de_fundo = db.Column(db.String(10))
-    menu_institucional = db.Column(db.Boolean)
-    menu_servicos = db.Column(db.Boolean)
-    menu_produtos = db.Column(db.Boolean)
-    imagem = db.Column(db.String(255))
-    logo = db.Column(db.String(255))
+    menu_institucional = db.Column(db.Boolean, default=False)  
+    menu_servicos = db.Column(db.Boolean, default=False)  
+    menu_produtos = db.Column(db.Boolean, default=False) 
+    imagem = db.Column(db.String(255), nullable=True) 
+    logo = db.Column(db.String(255), nullable=True)
     posicao_do_menu = db.Column(db.String(20))
 
 
-    def __init__(self, nome, cor_de_fundo, menu_institucional, menu_servicos, menu_produtos, imagem, logo, posicao_do_menu):
+    def __init__(self, nome, cor_de_fundo, posicao_do_menu, menu_institucional=False, 
+                 menu_servicos=False, menu_produtos=False, imagem=None, logo=None):
         self.nome = nome
         self.cor_de_fundo = cor_de_fundo
         self.menu_institucional = menu_institucional
@@ -33,6 +34,7 @@ class Layout(db.Model):
         self.imagem = imagem
         self.logo = logo
         self.posicao_do_menu = posicao_do_menu
+
 
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
