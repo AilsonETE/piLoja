@@ -3,7 +3,7 @@ from app import app, db
 from sqlalchemy.exc import IntegrityError
 from app.models.modelos import Usuario, Empresa, Venda, Pagina, Promocao,FAQ, Noticia, Categoria, Layout, Servico
 import os
-
+from werkzeug.utils import secure_filename
 from datetime import datetime
 
 UPLOAD_FOLDER = 'caminho/para/salvar/os/arquivos'
@@ -17,9 +17,9 @@ def verifica_e_cria_diretorio_upload():
 #Janio begin
 @app.route('/servicos',methods=['GET'])
 def get_servicos():
-    Servicos = servicos.query.all()
+    servicos = Servico.query.all()
     lista_servicos= []
-    for servico in Servicos:
+    for servico in servicos:
         lista_servicos.append({
             'id': servico.id,
             'nome': servico.nome,
@@ -32,11 +32,11 @@ def get_servicos():
 # Obter uma venda por ID
 @app.route('/obter_servicos/<int:servicos_id>', methods=['GET'])
 def get_id_servicos(servicos_id):
-    Servicos = servicos.query.get(servicos_id)
-    if Servicos is None:
+    servicos = Servico.query.get(servicos_id)
+    if servicos is None:
         return jsonify({'error': 'Venda não encontrada'}), 404
     return jsonify({
-        'id': Servicos.id,
+        'id': servicos.id,
     })
 
 # Criar um serviço
@@ -56,14 +56,14 @@ def create_servico():
 # Atualizar um serviço
 @app.route('/atualizar_servicos/<int:servicos_id>', methods=['PUT'])
 def update_servico(servicos_id):
-    Servicos = servicos.query.get(servicos_id)
-    if Servicos is None:
+    servicos = Servico.query.get(servicos_id)
+    if servicos is None:
         return jsonify({'error': 'Servico não encontrado'}), 404
     data = request.json
-    Servicos.nome = data['nome']
-    Servicos.descricao = data['nome']
-    Servicos.id_categoria = data['id_categoria']
-    Servicos.imagem = data['imagem']
+    Servico.nome = data['nome']
+    Servico.descricao = data['nome']
+    Servico.id_categoria = data['id_categoria']
+    Servico.imagem = data['imagem']
 
     db.session.commit()
     return jsonify({'message': 'Serviço atualizado com sucesso'})
@@ -71,10 +71,10 @@ def update_servico(servicos_id):
 # Excluir uma venda
 @app.route('/excluir_servicos/<int:servicos_id>', methods=['DELETE'])
 def delete_servico(servicos_id):
-    Servicos = servicos.query.get(servicos_id)
-    if Servicos is None:
+    servicos = Servico.query.get(servicos_id)
+    if servicos is None:
         return jsonify({'error': 'servicos não encontrada'}), 404
-    db.session.delete(Servicos)
+    db.session.delete(servicos)
     db.session.commit()
     return jsonify({'message': 'servicos excluída com sucesso'})
 
@@ -690,3 +690,62 @@ def delete_categoria(categoria_id):
     db.session.delete(categoria)
     db.session.commit()
     return jsonify({'message': 'Categoria excluída com sucesso'})
+
+#Rodrigo
+
+# Listar todos os produtos
+@app.route('/produtos', methods=['GET'])
+def get_produtos():
+    produtos = Produto.query.all()
+    lista_produtos = []
+    for produto in produtos:
+        lista_produtos.append({
+            'id': produto.id,
+            'nome': produto.nome,
+            'preco': produto.preco,
+            'descricao': produto.descricao,
+            'categoria_id': produto.categoria_id,
+            'imagem': produto.imagem
+        })
+    return jsonify(lista_produtos)
+
+# Obter um produto por ID
+@app.route('/produtos/<int:produto_id>', methods=['GET'])
+def get_produto(produto_id):
+    produto = Produto.query.get(produto_id)
+    if produto is None:
+        return jsonify({'error': 'Produto não encontrado'}), 404
+    return jsonify({
+        'id': produto.id,
+        'nome': produto.nome,
+        'preco': produto.preco,
+        'descricao': produto.descricao,
+        'categoria_id': produto.categoria_id,
+        'imagem': produto.imagem
+    })
+
+
+# Criar uma nova venda
+@app.route('/produtos', methods=['POST'])
+def create_produto():
+    dados_produto = request.json
+    novo_produto = Produto(
+        nome=dados_produto['nome'],
+        preco=dados_produto['preco'],
+        descricao=dados_produto['descricao'],
+        categoria_id=dados_produto['categoria_id'],
+        imagem=dados_produto['imagem']
+    )
+    db.session.add(novo_produto)
+    db.session.commit()
+    return jsonify({'message': 'Produto criado com sucesso'}), 201
+
+# Excluir um produto
+@app.route('/produtos/<int:produto_id>', methods=['DELETE'])
+def delete_produto(produto_id):
+    produto = Produto.query.get(produto_id)
+    if produto is None:
+        return jsonify({'error': 'Produto não encontrado'}), 404
+    db.session.delete(produto)
+    db.session.commit()
+    return jsonify({'message': 'Produto excluído com sucesso'})
